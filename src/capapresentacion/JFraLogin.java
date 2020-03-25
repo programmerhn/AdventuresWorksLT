@@ -206,6 +206,8 @@ public class JFraLogin extends javax.swing.JFrame {
 
     private void jBtnAcceptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnAcceptActionPerformed
         try {
+            
+            // sirver para iniciar sesión.
             iniciarSesion();
             
         } catch (SQLException | ClassNotFoundException ex) {
