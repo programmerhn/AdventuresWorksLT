@@ -15,11 +15,17 @@ import java.sql.SQLException;
  */
 public class Conexion {
     
-    public static Connection conectar() throws ClassNotFoundException, SQLException{
+    public static Connection conectar() throws SQLException{
         
-        Class.forName("com.mysql.cj.jdbc.Driver");
+        try{
+            Class.forName("com.mysql.cj.jdbc.Driver");
         
         return DriverManager.getConnection("jdbc:mysql://localhost:3306/AdventuresWorksLT?zeroDateTimeBehavior=convertToNull","root","12345678");
+        
+        }catch (ClassNotFoundException e){
+            throw new SQLException(e.getMessage());
+        }
+        
     }
     
 }
