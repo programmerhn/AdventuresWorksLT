@@ -8,9 +8,7 @@ package capapresentacion;
 import capadatos.CDColor;
 import capalogica.CLColor;
 import java.sql.SQLException;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -32,8 +30,11 @@ public class JFraColor extends javax.swing.JFrame {
         enabledButtons(true, false, false, true);
         findCorrelative();
         this.jTFColorName.requestFocus();
+        this.setLocationRelativeTo(null);
         
     }
+    
+    // Method to clear the jTable.
     private void clearTable(){
         DefaultTableModel dtm = (DefaultTableModel) this.jTblColores.getModel();
         
@@ -41,11 +42,13 @@ public class JFraColor extends javax.swing.JFrame {
             dtm.removeRow(0);
         }
     }
+    
+    // Method to fill of data the jTable.
     private void fillTableColor() throws SQLException{
         clearTable();
         
         CDColor cdc = new CDColor();
-        List<CLColor> miLista = cdc.getListaColor();
+        List<CLColor> miLista = cdc.getListColor();
         DefaultTableModel temp = (DefaultTableModel) this.jTblColores.getModel();
         
        for(CLColor cl: miLista) {
@@ -56,6 +59,7 @@ public class JFraColor extends javax.swing.JFrame {
         }
     }
     
+    // Method to fill of data the jTable filtered by color ID.
     private void fillTableColorID(int colorID) throws SQLException{
         clearTable();
         
@@ -63,14 +67,17 @@ public class JFraColor extends javax.swing.JFrame {
         List<CLColor> miLista = cdc.getListaColorID(colorID);
         DefaultTableModel temp = (DefaultTableModel) this.jTblColores.getModel();
         
-       for(CLColor cl: miLista) {
+        miLista.stream().map((cl) -> {
             Object[] fila = new Object[2];
             fila[0] = cl.getColorID();
             fila[1] = cl.getColorName();
+            return fila;
+        }).forEachOrdered((fila) -> {
             temp.addRow(fila);
-        }
+        });
     }
     
+    // Method to enabled the buttons.
     private void enabledButtons(boolean add, boolean modify, boolean delete, boolean clear ){
         this.jBtnAdd.setEnabled(add);
         this.jBtnModify.setEnabled(modify);
@@ -78,6 +85,7 @@ public class JFraColor extends javax.swing.JFrame {
         this.jBtnClear.setEnabled(clear);
     }
     
+    // Method to fill the TextField with the selected data of the JTable.
     private void selectedRow(){
         if(this.jTblColores.getSelectedRow() != -1){
             this.jTFColorID.setText(String.valueOf(this.jTblColores.getValueAt(this.jTblColores.getSelectedRow(), 0)));
@@ -85,6 +93,7 @@ public class JFraColor extends javax.swing.JFrame {
         }
     }
     
+    // Method to consult the correlative ID of the color.
     private void findCorrelative() throws SQLException{
         
         CDColor cdc = new CDColor();
@@ -96,11 +105,13 @@ public class JFraColor extends javax.swing.JFrame {
         
     }
     
+    // Method to clear the TextFields.
     private void clearTextField(){
         this.jTFColorID.setText("");
         this.jTFColorName.setText("");
     }
     
+    // Method to insert the color in the DB.
     private void insertColor(){
         try{
             CDColor cdc = new CDColor();
@@ -117,6 +128,7 @@ public class JFraColor extends javax.swing.JFrame {
         }
     }
     
+    // Method to update the color in the DB.
     private void updateColor(){
         try{
             CDColor cdc = new CDColor();
@@ -135,6 +147,7 @@ public class JFraColor extends javax.swing.JFrame {
         }
     }
     
+    // Method to delete the color in the DB.
     private void deleteColor(){
         try{
             CDColor cdc = new CDColor();
@@ -205,6 +218,7 @@ public class JFraColor extends javax.swing.JFrame {
         jRadioButton1.setText("jRadioButton1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setUndecorated(true);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jPanel1.setBackground(new java.awt.Color(40, 53, 147));
@@ -306,8 +320,7 @@ public class JFraColor extends javax.swing.JFrame {
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addComponent(jLabel1)
                                 .addGap(32, 32, 32)
-                                .addComponent(jTFColorID, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 9, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(jTFColorID, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addComponent(jLabel3)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -339,10 +352,11 @@ public class JFraColor extends javax.swing.JFrame {
                     .addComponent(jLabel3)
                     .addComponent(jTFColorName, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(27, 27, 27)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jBtnAdd)
-                    .addComponent(jBtnModify, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jBtnDelete))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jBtnModify, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jBtnAdd)
+                        .addComponent(jBtnDelete)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jBtnClear)
                 .addGap(20, 20, 20))
