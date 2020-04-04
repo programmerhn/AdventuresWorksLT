@@ -30,7 +30,7 @@ public class CDProductModel {
         cn = Conexion.conectar();
     }
      
-    // Method to load of data the ComboBox Product Model
+    // Método para cargar el combo box del modelo de productos.
     public ArrayList<String> loadProductModel(CLProductModel clp) throws SQLException {
         String sql = "{call sp_showProductModel(?)}";
 
@@ -54,6 +54,7 @@ public class CDProductModel {
 
         return miLista;
     }
+    
     
     public List<CLProductModel> getListaProductModel(CLProductModel clp) throws SQLException {
         String sql;

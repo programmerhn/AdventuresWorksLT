@@ -30,16 +30,21 @@ public class CDColor {
         this.cn = Conexion.conectar();
     }
     
-    public void insertColor(CLColor cl) throws SQLException{
-        
+    // Método para insertar el color en la BD's
+    public void insertColor(CLColor cl) throws SQLException {
+
         String sql = "{call sp_insertColor(?)}";
-        
-        try(PreparedStatement ps = cn.prepareCall(sql)){
+
+        try {
+            ps = cn.prepareCall(sql);
             ps.setString(1, cl.getColorName());
             ps.execute();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error: " + e.getMessage());
         }
     }
     
+    // Método para actualizar el color en la base de datos.
     public void updateColor(CLColor cl) throws SQLException{
         
         String sql = "{call sp_updateColor(?,?)}";
@@ -54,6 +59,7 @@ public class CDColor {
         }
     }
     
+    // Método para eliminar un color de la base de datos.
     public void deleteColor(CLColor cl) throws SQLException{
         
         String sql = "{call sp_deleteColor(?)}";
@@ -68,6 +74,7 @@ public class CDColor {
 
     }
 
+    // Método para consultar el ID del color que se va a almacenar.
     public int autoIncrementColorID() throws SQLException{
         
         int colorID = 0;
@@ -90,7 +97,6 @@ public class CDColor {
     }
     
     // Método para llenar la tabla.
-    
     public List<CLColor> getListColor() throws SQLException {
         String sql;
 
@@ -117,8 +123,7 @@ public class CDColor {
         return miLista;
     }
    
-      // Método para cargar de datos el ComboBox Color.
-    
+    // Método para cargar de datos el ComboBox Color.
     public ArrayList<String> loadColor() throws SQLException{
         String sql = "{call sp_showColor}";
 
