@@ -5,6 +5,17 @@
  */
 package capapresentacion;
 
+import capadatos.CDProductCategory;
+import capadatos.CDProductModel;
+import capalogica.CLProductModel;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author oscarpineda
@@ -13,12 +24,175 @@ public class JFraProductModel extends javax.swing.JFrame {
 
     /**
      * Creates new form JFraProductModel
+     * @throws java.sql.SQLException
      */
-    public JFraProductModel() {
+    public JFraProductModel() throws SQLException {
         initComponents();
+        loadComboCategory();
+        fillTableProductModel();
+        findCorrelative();
         this.setLocationRelativeTo(null);
     }
 
+     // Método para limpiar la tabla.
+    private void clearTable() {
+        DefaultTableModel dtm = (DefaultTableModel) this.jTblProductModel.getModel();
+
+        while (dtm.getRowCount() > 0) {
+            dtm.removeRow(0);
+        }
+    }
+
+    // Método para cargar el Combo Box de Categoría.
+    private void loadComboCategory() throws SQLException {
+
+        CDProductCategory cdpc = new CDProductCategory();
+
+        String[] category = new String[cdpc.loadProductCategory().size()];
+        category = cdpc.loadProductCategory().toArray(category);
+
+        DefaultComboBoxModel modelCategory = new DefaultComboBoxModel(category);
+        this.jCBProductCategory.setModel(modelCategory);
+
+    }
+    // Método para filtrar la tabla con el filtro del id de la categoría.
+    private void fillTableProductModel() throws SQLException {
+        clearTable();
+
+        CDProductModel cdpm = new CDProductModel();
+        List<CLProductModel> miLista = cdpm.getListProductModel();
+        DefaultTableModel temp = (DefaultTableModel) this.jTblProductModel.getModel();
+
+        miLista.stream().map((clpc) -> {
+            Object[] fila = new Object[3];
+            fila[0] = clpc.getProductModelID();
+            fila[1] = clpc.getProductModelName();
+            fila[2] = clpc.getProductCategoryName();
+            return fila;
+        }).forEachOrdered((fila) -> {
+            temp.addRow(fila);
+        });
+    }
+    
+    private void fillTableProductModelID(int productModelID) throws SQLException {
+        clearTable();
+
+        CDProductModel cdpc = new CDProductModel();
+        List<CLProductModel> miLista = cdpc.getListProductCategoryID(productModelID);
+        DefaultTableModel temp = (DefaultTableModel) this.jTblProductModel.getModel();
+
+        miLista.stream().map((clpc) -> {
+            Object[] fila = new Object[3];
+            fila[0] = clpc.getProductModelID();
+            fila[1] = clpc.getProductModelName();
+            fila[2] = clpc.getProductCategoryName();
+            return fila;
+        }).forEachOrdered((fila) -> {
+            temp.addRow(fila);
+        });
+    }
+        
+    // Método para habilitar y deshabilitar los botones.
+    private void enabledButtons(boolean add, boolean modify, boolean delete, boolean clear ){
+        this.jBtnAdd.setEnabled(add);
+        this.jBtnEdit.setEnabled(modify);
+        this.jBtnDelete.setEnabled(delete);
+        this.jBtnClear.setEnabled(clear);
+    }
+    
+    // Método para pasar a los campos de texto los datos de la fila seleccionada en la tabla.
+    private void selectedRow() {
+        if (this.jTblProductModel.getSelectedRow() != -1) {
+            this.jTFModelID.setText(String.valueOf(this.jTblProductModel.getValueAt(this.jTblProductModel.getSelectedRow(), 0)));
+            this.jTFModelName.setText(String.valueOf(this.jTblProductModel.getValueAt(this.jTblProductModel.getSelectedRow(), 1)));
+            this.jCBProductCategory.setSelectedItem(String.valueOf(this.jTblProductModel.getValueAt(this.jTblProductModel.getSelectedRow(), 2)));
+            enabledButtons(false, true, true, true);
+        }
+    }
+    
+    // Consultar el correlativo de Product Model.
+    private void findCorrelative() throws SQLException{
+        
+        CDProductModel cdpm = new CDProductModel();
+        CLProductModel clpm = new CLProductModel();
+
+        clpm.setProductModelID(cdpm.autoIncrementProductModel());
+        this.jTFModelID.setText(String.valueOf(clpm.getProductModelID()));    
+    }
+    
+       // Método para limpiar las TextField.
+    private void clearTextField() {
+        this.jTFModelID.setText("");
+        this.jTFModelName.setText("");
+        this.jCBProductCategory.setSelectedIndex(0);
+        
+    }
+    
+     // Método para validar que el campo de texto del nombre del modelo del producto.
+    private boolean validarTextField(){
+        boolean estado;
+        
+        if(this.jTFModelName.getText().length() > 0 && this.jCBProductCategory.getSelectedItem().equals("")){
+            estado = false;
+        }else{
+            estado = true;
+        }          
+        return estado;
+    }
+    
+    // Método para insertar un modelo de producto.
+    private void insertProductModel() {
+        try {
+            CDProductModel cdpm = new CDProductModel();
+            CLProductModel clpm = new CLProductModel();
+            clpm.setProductModelName(this.jTFModelName.getText().trim());
+            clpm.setProductCategoryName(this.jCBProductCategory.getSelectedItem().toString());
+            cdpm.insertProductModel(clpm);
+
+            JOptionPane.showMessageDialog(null, "Record saved successfully...", "AdventureWorksLT System",
+                    JOptionPane.INFORMATION_MESSAGE);
+            clearTextField();
+
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, "Error to save product model: " + ex);
+        }
+    }
+    
+    // Método para actualizar el modelo del producto.
+    private void updateProductCategory() {
+        try {
+            CDProductModel cdpm = new CDProductModel();
+            CLProductModel clpm = new CLProductModel();
+            clpm.setProductModelName(this.jTFModelName.getText().trim());
+            clpm.setProductCategoryName(this.jCBProductCategory.getSelectedItem().toString());
+            clpm.setProductModelID(Integer.parseInt(this.jTFModelID.getText().trim()));
+            cdpm.updateProductModel(clpm);
+
+            JOptionPane.showMessageDialog(null, "Record edited successfully...", "AdventureWorksLT System",
+                    JOptionPane.INFORMATION_MESSAGE);
+            clearTextField();
+
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, "Error to edit product model: " + ex);
+        }
+    }
+    
+    // Método para eliminar un modelo de producto de la base de datos.
+    private void deleteProductModel() {
+        try {
+            CDProductModel cdpm = new CDProductModel();
+            CLProductModel clpm = new CLProductModel();           
+            clpm.setProductModelID(Integer.parseInt(this.jTFModelID.getText().trim()));
+            cdpm.deleteProductModel(clpm);
+
+            JOptionPane.showMessageDialog(null, "Record deleted successfully...", "AdventureWorksLT System",
+                    JOptionPane.INFORMATION_MESSAGE);
+            clearTextField();
+
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, "Error to delete product model: " + ex);
+        }
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -28,6 +202,7 @@ public class JFraProductModel extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        buttonGroup1 = new javax.swing.ButtonGroup();
         jPanel1 = new javax.swing.JPanel();
         jLblCerrar = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -115,14 +290,14 @@ public class JFraProductModel extends javax.swing.JFrame {
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 640, Short.MAX_VALUE)
+            .addGap(0, 630, Short.MAX_VALUE)
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 10, Short.MAX_VALUE)
         );
 
-        getContentPane().add(jPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 70, 640, 10));
+        getContentPane().add(jPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 70, 630, 10));
 
         jPanel2.setBackground(new java.awt.Color(121, 134, 203));
         jPanel2.setForeground(new java.awt.Color(255, 255, 255));
@@ -135,9 +310,14 @@ public class JFraProductModel extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Model ID", "Model Name"
+                "Model ID", "Model Name", "Category Name"
             }
         ));
+        jTblProductModel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                jTblProductModelMousePressed(evt);
+            }
+        });
         jScrollPane1.setViewportView(jTblProductModel);
 
         jLabel4.setBackground(new java.awt.Color(255, 255, 255));
@@ -145,6 +325,7 @@ public class JFraProductModel extends javax.swing.JFrame {
         jLabel4.setForeground(new java.awt.Color(255, 255, 255));
         jLabel4.setText("Find type");
 
+        buttonGroup1.add(jRBByCode);
         jRBByCode.setForeground(new java.awt.Color(255, 255, 255));
         jRBByCode.setText("By Code");
         jRBByCode.addChangeListener(new javax.swing.event.ChangeListener() {
@@ -158,6 +339,7 @@ public class JFraProductModel extends javax.swing.JFrame {
             }
         });
 
+        buttonGroup1.add(jRBAll);
         jRBAll.setForeground(new java.awt.Color(255, 255, 255));
         jRBAll.setText("All");
         jRBAll.addActionListener(new java.awt.event.ActionListener() {
@@ -172,35 +354,43 @@ public class JFraProductModel extends javax.swing.JFrame {
         jBtnFind.setForeground(new java.awt.Color(255, 255, 255));
         jBtnFind.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/Find2.png"))); // NOI18N
         jBtnFind.setEnabled(false);
+        jBtnFind.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnFindActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addComponent(jRBAll)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jRBByCode)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jTFByCode, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jBtnFind)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(jPanel4Layout.createSequentialGroup()
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel4Layout.createSequentialGroup()
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel4)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 14, Short.MAX_VALUE))))
+                            .addGroup(jPanel4Layout.createSequentialGroup()
+                                .addComponent(jLabel4)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addGroup(jPanel4Layout.createSequentialGroup()
+                                .addComponent(jRBAll)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jRBByCode)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jTFByCode, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jBtnFind))))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel4Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(0, 10, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                .addGap(11, 11, 11)
+                .addGap(17, 17, 17)
                 .addComponent(jLabel4)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jRBAll)
@@ -208,7 +398,7 @@ public class JFraProductModel extends javax.swing.JFrame {
                         .addComponent(jTFByCode, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jBtnFind, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -220,19 +410,38 @@ public class JFraProductModel extends javax.swing.JFrame {
         jBtnClear.setForeground(new java.awt.Color(40, 53, 147));
         jBtnClear.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/Cancel1.png"))); // NOI18N
         jBtnClear.setText("Clear");
-        jPanel6.add(jBtnClear, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 180, 263, 47));
+        jBtnClear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnClearActionPerformed(evt);
+            }
+        });
+        jPanel6.add(jBtnClear, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 180, 280, 47));
 
         jBtnAdd.setBackground(new java.awt.Color(255, 255, 255));
         jBtnAdd.setForeground(new java.awt.Color(40, 53, 147));
         jBtnAdd.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/Add.png"))); // NOI18N
         jBtnAdd.setText("Save");
-        jPanel6.add(jBtnAdd, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 130, -1, -1));
+        jBtnAdd.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jBtnAdd.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        jBtnAdd.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnAddActionPerformed(evt);
+            }
+        });
+        jPanel6.add(jBtnAdd, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 130, 90, -1));
 
         jBtnEdit.setBackground(new java.awt.Color(255, 255, 255));
         jBtnEdit.setForeground(new java.awt.Color(40, 53, 147));
         jBtnEdit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/Edit.png"))); // NOI18N
         jBtnEdit.setText("Edit");
         jBtnEdit.setEnabled(false);
+        jBtnEdit.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jBtnEdit.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        jBtnEdit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnEditActionPerformed(evt);
+            }
+        });
         jPanel6.add(jBtnEdit, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 130, 90, -1));
 
         jBtnDelete.setBackground(new java.awt.Color(255, 255, 255));
@@ -240,7 +449,14 @@ public class JFraProductModel extends javax.swing.JFrame {
         jBtnDelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/Delete.png"))); // NOI18N
         jBtnDelete.setText("Delete");
         jBtnDelete.setEnabled(false);
-        jPanel6.add(jBtnDelete, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 130, -1, -1));
+        jBtnDelete.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jBtnDelete.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        jBtnDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnDeleteActionPerformed(evt);
+            }
+        });
+        jPanel6.add(jBtnDelete, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 130, 100, -1));
         jPanel6.add(jTFModelName, new org.netbeans.lib.awtextra.AbsoluteConstraints(120, 50, 165, 32));
 
         jLabel3.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
@@ -273,7 +489,7 @@ public class JFraProductModel extends javax.swing.JFrame {
                 .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, 304, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(90, 90, 90))
+                .addGap(96, 96, 96))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -291,12 +507,12 @@ public class JFraProductModel extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jLblCerrarMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLblCerrarMousePressed
-        System.exit(0);
+        this.dispose();
     }//GEN-LAST:event_jLblCerrarMousePressed
 
     private void jLblCerrarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLblCerrarMouseClicked
 
-        System.exit(0);
+    
     }//GEN-LAST:event_jLblCerrarMouseClicked
 
     private void jRBByCodeStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jRBByCodeStateChanged
@@ -316,8 +532,90 @@ public class JFraProductModel extends javax.swing.JFrame {
             this.jTFByCode.setEditable(false);
             this.jTFByCode.setText("");
             this.jBtnFind.setEnabled(false);
+            try {
+                fillTableProductModel();
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(null, "Error fill table: " + ex);
+            }
         }
     }//GEN-LAST:event_jRBAllActionPerformed
+
+    private void jTblProductModelMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTblProductModelMousePressed
+        
+        selectedRow();
+    }//GEN-LAST:event_jTblProductModelMousePressed
+
+    private void jBtnFindActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnFindActionPerformed
+        
+        int productModelID;
+
+        productModelID = Integer.parseInt(this.jTFByCode.getText());
+
+        try {
+            fillTableProductModelID(productModelID);
+
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, "Error fill table: " + ex);
+        }
+    }//GEN-LAST:event_jBtnFindActionPerformed
+
+    @SuppressWarnings("empty-statement")
+    private void jBtnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnAddActionPerformed
+        if (validarTextField() == true) {
+            try {
+                insertProductModel();
+                fillTableProductModel();
+                clearTextField();
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(null, "Error fill table: " + ex);;
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "Write the product model name and select its category.", "AdventuresWorsLT",
+                    JOptionPane.INFORMATION_MESSAGE);
+            this.jTFModelName.requestFocus();
+        }
+    }//GEN-LAST:event_jBtnAddActionPerformed
+
+    private void jBtnEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnEditActionPerformed
+        if (validarTextField() == true) {
+
+            try {
+                updateProductCategory();
+                fillTableProductModel();
+                findCorrelative();
+                this.jTFModelName.requestFocus();
+                enabledButtons(true, false, false, true);
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(null, "Error fill table: " + ex);
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "Write the product model name and select category.", "AdventuresWorsLT",
+                    JOptionPane.INFORMATION_MESSAGE);
+            this.jTFModelName.requestFocus();
+        }
+    }//GEN-LAST:event_jBtnEditActionPerformed
+
+    private void jBtnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnClearActionPerformed
+        
+        clearTextField();
+        try {
+            findCorrelative();
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, "Error fill table: " + ex);
+        }
+    }//GEN-LAST:event_jBtnClearActionPerformed
+
+    private void jBtnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnDeleteActionPerformed
+        try {
+            deleteProductModel();
+            fillTableProductModel();
+            findCorrelative();
+            this.jTFModelName.requestFocus();
+            enabledButtons(true, false, false, true);
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, "Error fill table: " + ex);
+        }
+    }//GEN-LAST:event_jBtnDeleteActionPerformed
 
     /**
      * @param args the command line arguments
@@ -349,12 +647,17 @@ public class JFraProductModel extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new JFraProductModel().setVisible(true);
+                try {
+                    new JFraProductModel().setVisible(true);
+                } catch (SQLException ex) {
+                    Logger.getLogger(JFraProductModel.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JButton jBtnAdd;
     private javax.swing.JButton jBtnClear;
     private javax.swing.JButton jBtnDelete;

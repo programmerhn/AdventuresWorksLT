@@ -30,7 +30,7 @@ public class CDProductCategory {
         cn = Conexion.conectar();
     }
     
-      // Método para insertar el color en la BD's
+      // Método para insertar la categoría del producto en la BD's
     public void insertProductCategory(CLProductCategory clpc) throws SQLException {
 
         String sql = "{call sp_insertProductCategory(?)}";
@@ -59,7 +59,7 @@ public class CDProductCategory {
         }
     }
     
-     // Método para eliminar una categoría de producto de la base de datos.
+    // Método para eliminar una categoría de producto de la base de datos.
     public void deleteProductCategory(CLProductCategory clpc) throws SQLException{
         
         String sql = "{call sp_deleteProductCategory(?)}";

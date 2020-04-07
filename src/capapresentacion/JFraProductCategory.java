@@ -93,7 +93,7 @@ public class JFraProductCategory extends javax.swing.JFrame {
     }
    
    // Consultar el correlativo de Product Category.
-      private void findCorrelative() throws SQLException{
+    private void findCorrelative() throws SQLException{
         
         CDProductCategory cdpc = new CDProductCategory();
             CLProductCategory clpc = new CLProductCategory();
@@ -134,7 +134,8 @@ public class JFraProductCategory extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "Error to save product category: " + ex);
         }
     }
-
+     
+    // Método para actualizar la categoría del producto.
     private void updateProductCategory() {
         try {
             CDProductCategory cdpc = new CDProductCategory();
@@ -265,14 +266,14 @@ public class JFraProductCategory extends javax.swing.JFrame {
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 640, Short.MAX_VALUE)
+            .addGap(0, 650, Short.MAX_VALUE)
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 10, Short.MAX_VALUE)
         );
 
-        getContentPane().add(jPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 70, 640, 10));
+        getContentPane().add(jPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 70, 650, 10));
 
         jPanel2.setBackground(new java.awt.Color(121, 134, 203));
         jPanel2.setForeground(new java.awt.Color(255, 255, 255));
