@@ -56,7 +56,7 @@
                   <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="399" max="32767" attributes="0"/>
+                  <EmptySpace pref="397" max="32767" attributes="0"/>
                   <Component id="jLblCerrar" min="-2" pref="24" max="-2" attributes="0"/>
                   <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
               </Group>
@@ -107,7 +107,7 @@
             <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
               <Color blue="f5" green="f5" red="f5" type="rgb"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="Gesti&#xf3;n Color"/>
+            <Property name="text" type="java.lang.String" value="Manage Color"/>
           </Properties>
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel5">
