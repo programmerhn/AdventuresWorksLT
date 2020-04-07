@@ -17,6 +17,7 @@ import javax.swing.table.DefaultTableModel;
 /**
  *
  * @author oscarpineda
+ * comentario prueba
  */
 public class JFraColor extends javax.swing.JFrame {
 
