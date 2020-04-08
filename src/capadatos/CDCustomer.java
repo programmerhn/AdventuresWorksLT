@@ -85,7 +85,7 @@ public class CDCustomer {
 
     }
       
-    public int autoIncrementColorID() throws SQLException{
+    public int autoIncrementCustomerID() throws SQLException{
         
         int customerID = 0;
         String sql = "{call sp_autoIncrementCustomerID()}";
